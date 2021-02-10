@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html><head><style>a{text-decoration:none}a:link{color:#FFFFFF}a:visited{color:#FFFFFF}a:hover{color:#CDCDCD}a:active{color:#3388FF}html,body{height:100%;-webkit-text-size-adjust:none;background:#EFEFF4;overflow:hidden}.player{height:95%}</style>
+<meta name="description" content="本地Html5弹幕播放器">
+<title>本地Html5弹幕播放器</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<link rel="stylesheet" href="player_lib/ABPlayer.css"><script src="player_lib/jquery-2.js"></script><script src="player_lib/biliplus_shield.js"></script><script src="player_lib/CommentCoreLibrary.js"></script><script src="player_lib/ABPlayer.js"></script><script src="player_lib/ABPlayer_strings.js"></script><script src="player_lib/google-style-loading.js"></script></head>
+<body><tunnel id="addon_tunnel"></tunnel>
+<div>视频文件：<input id="biliplus-h5play-local-video" type="file"></div>
+<div>弹幕文件：<input id="biliplus-h5play-local-comment" type="file">
+<button id="biliplus-h5play-local-confirm" onclick="init.chkSrc()">加载</button></div>
+<div id="player" class="player"></div>
+<div class="video">
+<video id="video" preload="auto" data-setup="{}" webkit-playsinline=""></video>
+</div>
+<script>
+load_fail=[
+	function(){
+		var div=document.createElement('div');
+		div.innerHTML='<div style="position:relative;top:50%"><div style="position:relative;font-size:16px;line-height:16px;top:-8px">加载视频失败，无法播放该视频</div></div>';
+		div.setAttribute('style','width:100%;height:100%;text-align:center;background:rgba(0,0,0,0.8);position:absolute;color:#FFF');
+		document.querySelector('.ABP-Video').insertBefore(div,document.querySelector('.ABP-Video>:first-child'));
+		document.getElementById('info-box').remove();
+	}];
+	init={chkSrc:function(){
+		
+		var file = document.getElementById('biliplus-h5play-local-video').files[0], xmlFile = document.getElementById('biliplus-h5play-local-comment').files[0]
+		if (!file) return;
+		
+		init.abp();
+		var fileUrl = URL.createObjectURL(file);
+		document.querySelector('#video').src = fileUrl;
+		if (xmlFile) {
+			var xmlUrl = URL.createObjectURL(xmlFile);
+			CommentLoader(xmlUrl, abpinst.cmManager);
+		}
+		window.addEventListener('unload', function () {
+			URL.revokeObjectURL(fileUrl);
+			URL.revokeObjectURL(xmlUrl);
+		});
+	},
+	abp:function(){
+		if(window.abpinst)return;
+		var abpOptions={scale:1,opacity:1,speed:1,useCSS:false,autoOpacity:false}
+		try{
+			var settings=localStorage.html5Settings||'{}';
+			settings=JSON.parse(settings);
+			abpOptions=Object.assign(abpOptions,settings);
+		} catch(e) {}
+		window.abpinst = ABP.create(document.getElementById("player"), {
+			src: {
+				playlist: [{
+					video: document.getElementById("video"),
+					comments:'//comment.bilibili.com/'+window.cid+'.xml'
+				}]
+			},
+			width: '100%',
+			height: '100%',
+			config:abpOptions
+		});
+		if(location.hash != '') abpinst.title = unescape(location.hash.substr(1));
+		dots.init({
+			id:'dots',
+			width:'100%',
+			height:'100%',
+			r:16,
+			thick:4
+		});
+		dots.runTimer();
+		
+		$('.shield-enrty')[0].addEventListener('click',shield.show);
+		$('.shield_top .close')[0].addEventListener('click',shield.show);
+		$('.shield_item .add')[0].addEventListener('click',shield.add);
+		
+		abpinst.playerUnit.style.width='100%';
+		abpinst.playerUnit.style.height='100%';
+		abpinst.playerUnit.style.position='fixed';
+		abpinst.playerUnit.style.top=0;
+		abpinst.playerUnit.style.left=0;
+		document.body.style.overflow='hidden';
+	}
+}
+</script>
+<br>
+
+	</body></html>
