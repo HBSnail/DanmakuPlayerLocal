@@ -1,0 +1,2 @@
+# DanmakuPlayerLocal
+从biliplus网站分离出的弹幕播放器，配合bilibilidownloader项目使用，离线观看弹幕视频
